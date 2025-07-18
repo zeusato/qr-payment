@@ -1,21 +1,28 @@
-<body>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>QR chuyển khoản</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+</head>
+<body style="font-family:sans-serif; text-align:center; padding:40px;">
   <h2>Mã QR chuyển khoản</h2>
   <canvas id="qrCanvas"></canvas>
   <p id="note" style="color: grey; font-size: 14px;"></p>
 
   <script>
-    function getParam(name) {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name) || '';
-    }
+    // Đảm bảo chỉ chạy khi QRCode đã được load
+    window.addEventListener('load', function () {
+      const params = new URLSearchParams(window.location.search);
+      const stk = params.get('stk');
+      const bank = params.get('bank');
+      const amount = params.get('amount');
 
-    const stk = getParam('stk');
-    const bank = getParam('bank');
-    const amount = getParam('amount');
+      if (!stk || !bank || !amount) {
+        document.getElementById('note').innerText = 'Thiếu tham số: stk, bank hoặc amount';
+        return;
+      }
 
-    if (!stk || !bank || !amount) {
-      document.getElementById('note').innerText = 'Thiếu tham số: stk, bank hoặc amount';
-    } else {
       let emv = '000201010212';
       emv += '38590010A00000072701' + bank + stk;
       emv += '0208QRIBFTTA';
@@ -24,17 +31,15 @@
       emv += '5802VN';
       emv += '6304FFFF';
 
-      QRCode.toCanvas(document.getElementById('qrCanvas'), emv, {
-        width: 300,
-        margin: 1
-      }, function (error) {
-        if (error) {
-          document.getElementById('note').innerText = 'Lỗi tạo QR';
-          console.error(error);
+      QRCode.toCanvas(document.getElementById('qrCanvas'), emv, { width: 300 }, err => {
+        if (err) {
+          document.getElementById('note').innerText = 'Lỗi tạo mã QR';
+          console.error(err);
         } else {
-          document.getElementById('note').innerText = `Tài khoản: ${stk} | Ngân hàng: ${bank} | Số tiền: ${amount}`;
+          document.getElementById('note').innerText = `STK: ${stk} | Bank: ${bank} | Số tiền: ${amount}`;
         }
       });
-    }
+    });
   </script>
 </body>
+</html>
