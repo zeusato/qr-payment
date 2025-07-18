@@ -3,43 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <title>QR chuyển khoản</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    img {
+      margin-top: 20px;
+      max-width: 300px;
+    }
+  </style>
 </head>
-<body style="font-family:sans-serif; text-align:center; padding:40px;">
+<body>
   <h2>Mã QR chuyển khoản</h2>
-  <canvas id="qrCanvas"></canvas>
-  <p id="note" style="color: grey; font-size: 14px;"></p>
+  <div id="qrArea">
+    <p style="color: grey; font-size: 14px;">Đang xử lý...</p>
+  </div>
 
   <script>
-    // Đảm bảo chỉ chạy khi QRCode đã được load
-    window.addEventListener('load', function () {
-      const params = new URLSearchParams(window.location.search);
-      const stk = params.get('stk');
-      const bank = params.get('bank');
-      const amount = params.get('amount');
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || '';
+    }
 
-      if (!stk || !bank || !amount) {
-        document.getElementById('note').innerText = 'Thiếu tham số: stk, bank hoặc amount';
-        return;
-      }
+    const stk = getParam('stk');
+    const bank = getParam('bank');
+    const amount = getParam('amount');
 
-      let emv = '000201010212';
-      emv += '38590010A00000072701' + bank + stk;
-      emv += '0208QRIBFTTA';
-      emv += '5303704';
-      emv += '54' + (amount.length < 10 ? '0' + amount.length : amount.length) + amount;
-      emv += '5802VN';
-      emv += '6304FFFF';
-
-      QRCode.toCanvas(document.getElementById('qrCanvas'), emv, { width: 300 }, err => {
-        if (err) {
-          document.getElementById('note').innerText = 'Lỗi tạo mã QR';
-          console.error(err);
-        } else {
-          document.getElementById('note').innerText = `STK: ${stk} | Bank: ${bank} | Số tiền: ${amount}`;
-        }
-      });
-    });
+    if (!stk || !bank || !amount) {
+      document.getElementById('qrArea').innerHTML = '<p style="color:red">Thiếu tham số: stk, bank hoặc amount</p>';
+    } else {
+      const qrUrl = `https://img.vietqr.io/image/${bank}-${stk}-compact2.png?amount=${amount}`;
+      document.getElementById('qrArea').innerHTML = `<img src="${qrUrl}" alt="QR chuyển khoản"><p style='color: grey; font-size: 14px;'>STK: ${stk} | Bank: ${bank} | Số tiền: ${amount} VND</p>`;
+    }
   </script>
 </body>
 </html>
