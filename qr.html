@@ -1,1 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>QR chuyển khoản</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Mã QR chuyển khoản</h2>
+  <div id="qr"></div>
+  <p id="note" style="color: grey; font-size: 14px;"></p>
+
+  <script>
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || '';
+    }
+
+    const stk = getParam('stk');
+    const bank = getParam('bank');
+    const amount = getParam('amount');
+
+    if (!stk || !bank || !amount) {
+      document.getElementById('note').innerText = 'Thiếu tham số: stk, bank hoặc amount';
+      throw new Error('Missing parameters');
+    }
+
+    // Build EMV QR content (giả định không cần CRC để đơn giản hoá)
+    let emv = '000201010212';
+    emv += '38590010A00000072701' + bank + stk;
+    emv += '0208QRIBFTTA';
+    emv += '5303704';
+    emv += '54' + (amount.length < 10 ? '0' + amount.length : amount.length) + amount;
+    emv += '5802VN';
+    emv += '6304FFFF';
+
+    QRCode.toCanvas(document.getElementById('qr'), emv, {
+      width: 300,
+      margin: 1
+    }, function (error) {
+      if (error) {
+        document.getElementById('note').innerText = 'Lỗi tạo QR';
+        console.error(error);
+      } else {
+        document.getElementById('note').innerText = `Tài khoản: ${stk} | Ngân hàng: ${bank} | Số tiền: ${amount}`;
+      }
+    });
+  </script>
+</body>
+</html>
 
