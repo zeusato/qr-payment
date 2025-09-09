@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn Github & NPM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .command-block {
+            background-color: #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            position: relative;
+            cursor: pointer;
+            word-wrap: break-word;
+            transition: background-color 0.2s;
+        }
+        .command-block:hover {
+            background-color: #d1d5db;
+        }
+        .command-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #1f2937;
+            color: #ffffff;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .command-block:hover .copy-button {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .explanation {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Hướng dẫn Github và NPM</h1>
+        <p class="text-gray-600 text-lg">Các lệnh Terminal (Powershell - VS Code, Windows)</p>
+    </header>
+
+    <!-- GitHub Section -->
+    <div class="card mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Các lệnh với Github</h2>
+        
+        <!-- Khởi tạo và Thiết lập -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">1. Khởi tạo và Thiết lập</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git init</pre>
+                <div class="explanation">Khởi tạo một kho lưu trữ Git mới trong thư mục hiện tại.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git clone "URL kho lưu trữ"</pre>
+                <div class="explanation">Tải xuống một kho lưu trữ từ xa hiện có.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git config --global user.name "Tên Của Bạn"</pre>
+                <div class="explanation">Thiết lập tên người dùng cho tất cả các kho lưu trữ cục bộ.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git config --global user.email "email@example.com"</pre>
+                <div class="explanation">Thiết lập email người dùng.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <!-- Thao tác với File -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">2. Thao tác với File</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git status</pre>
+                <div class="explanation">Kiểm tra trạng thái của các file (đã sửa đổi, đã staging, chưa được theo dõi).</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git add &lt;tên file&gt;</pre>
+                <div class="explanation">Đưa một file cụ thể vào khu vực staging.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git add .</pre>
+                <div class="explanation">Đưa tất cả các file đã thay đổi vào khu vực staging.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git restore --staged &lt;tên file&gt;</pre>
+                <div class="explanation">Bỏ một file ra khỏi khu vực staging.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git commit -m "Thông điệp commit"</pre>
+                <div class="explanation">Lưu các thay đổi từ khu vực staging vào kho lưu trữ cục bộ.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+        
+        <!-- Làm việc với nhánh (Branch) -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">3. Làm việc với nhánh (Branch)</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git branch</pre>
+                <div class="explanation">Liệt kê tất cả các nhánh cục bộ.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git branch &lt;tên nhánh mới&gt;</pre>
+                <div class="explanation">Tạo một nhánh mới.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git switch &lt;tên nhánh&gt;</pre>
+                <div class="explanation">Chuyển sang làm việc trên một nhánh khác.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git merge &lt;tên nhánh&gt;</pre>
+                <div class="explanation">Gộp các thay đổi từ một nhánh khác vào nhánh hiện tại.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <!-- Đồng bộ hoá -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">4. Đồng bộ hoá</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git remote add origin "URL kho lưu trữ"</pre>
+                <div class="explanation">Liên kết kho lưu trữ cục bộ với kho lưu trữ từ xa trên GitHub.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git pull origin master</pre>
+                <div class="explanation">Tải các thay đổi từ kho lưu trữ từ xa về.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git push origin &lt;tên nhánh&gt;</pre>
+                <div class="explanation">Đẩy các commit từ kho lưu trữ cục bộ lên GitHub.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <!-- Xem lịch sử và hoàn tác -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">5. Xem lịch sử và hoàn tác</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git log</pre>
+                <div class="explanation">Xem toàn bộ lịch sử commit.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git log --oneline</pre>
+                <div class="explanation">Xem lịch sử commit tóm tắt.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git revert &lt;ID commit&gt;</pre>
+                <div class="explanation">Tạo một commit mới để hoàn tác một commit đã tồn tại.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git reset --hard &lt;ID commit&gt;</pre>
+                <div class="explanation">Xóa toàn bộ lịch sử và các thay đổi chưa được commit trở về một commit cụ thể.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <!-- Các lệnh hữu ích khác -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">6. Các lệnh hữu ích khác</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git stash</pre>
+                <div class="explanation">Lưu tạm các thay đổi chưa commit để chuyển sang nhánh khác.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>git stash pop</pre>
+                <div class="explanation">Áp dụng lại các thay đổi đã lưu tạm.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NPM Section -->
+    <div class="card mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Các lệnh với NPM</h2>
+
+        <!-- Cài đặt và Quản lý -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">1. Cài đặt và Quản lý</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm init</pre>
+                <div class="explanation">Khởi tạo một file package.json mới.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm install &lt;tên gói&gt;</pre>
+                <div class="explanation">Cài đặt một gói vào thư mục node_modules.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm install &lt;tên gói&gt; --save-dev</pre>
+                <div class="explanation">Cài đặt một gói như một dependency dành cho môi trường dev.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm install -g &lt;tên gói&gt;</pre>
+                <div class="explanation">Cài đặt một gói toàn cục (global) để sử dụng ở bất kỳ đâu.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm install</pre>
+                <div class="explanation">Cài đặt tất cả các gói trong file package.json.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm uninstall &lt;tên gói&gt;</pre>
+                <div class="explanation">Gỡ bỏ một gói.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <!-- Chạy Script -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">2. Chạy Script</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm start</pre>
+                <div class="explanation">Chạy script "start" trong file package.json.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm test</pre>
+                <div class="explanation">Chạy script "test" trong file package.json.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm run &lt;tên script&gt;</pre>
+                <div class="explanation">
+                    Chạy một script tùy chỉnh trong file package.json.
+                    <br>
+                    Các lệnh thường dùng:
+                    <ul class="list-disc list-inside mt-2 ml-4">
+                        <li><b>npm run dev</b>: Khởi động máy chủ phát triển cục bộ.</li>
+                        <li><b>npm run build</b>: Biên dịch và tối ưu hóa mã nguồn cho môi trường production.</li>
+                        <li><b>npm run deploy</b>: Đẩy ứng dụng lên máy chủ production.</li>
+                    </ul>
+                </div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+        
+        <!-- Cập nhật và kiểm tra -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">3. Cập nhật và kiểm tra</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm outdated</pre>
+                <div class="explanation">Kiểm tra các gói đã lỗi thời.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm update &lt;tên gói&gt;</pre>
+                <div class="explanation">Cập nhật một gói lên phiên bản mới nhất.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm audit</pre>
+                <div class="explanation">Kiểm tra lỗ hổng bảo mật trong các gói.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <!-- Các lệnh khác -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">4. Các lệnh khác</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npx &lt;tên gói&gt;</pre>
+                <div class="explanation">Thực thi một gói từ xa mà không cần cài đặt.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- GitHub Pages Deployment Section -->
+    <div class="card mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Triển khai lên GitHub Pages (cho dự án TypeScript)</h2>
+        
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">1. Cài đặt các gói cần thiết</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm install --save-dev gh-pages cross-env</pre>
+                <div class="explanation">Cài đặt các gói `gh-pages` (để triển khai) và `cross-env` (để thiết lập biến môi trường tương thích).</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">2. Cập nhật file package.json</h3>
+            <p class="text-sm text-gray-600 mb-2">Thêm mục "homepage" và cập nhật mục "scripts" như sau:</p>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>"homepage": "https://&lt;username&gt;.github.io/&lt;tên-kho-lưu-trữ&gt;",</pre>
+                <div class="explanation">Thêm URL trang chủ của GitHub Pages vào file.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>
+"scripts": {
+    "start": "react-scripts start",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+},</pre>
+                <div class="explanation">
+                    <ul>
+                        <li><b>predeploy</b>: Lệnh này sẽ tự động chạy trước lệnh `deploy`.</li>
+                        <li><b>deploy</b>: Triển khai thư mục `build` (hoặc `dist`) lên nhánh `gh-pages`.</li>
+                        <li><b>build</b>: Tạo bản dựng (build) cho ứng dụng.</li>
+                    </ul>
+                </div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">3. Chạy lệnh triển khai</h3>
+            <div class="command-block" onclick="copyToClipboard(this)">
+                <pre>npm run deploy</pre>
+                <div class="explanation">Thực thi lệnh `deploy`, tự động chạy `predeploy` để tạo bản dựng và đẩy lên GitHub Pages.</div>
+                <div class="copy-button">Sao chép</div>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Lưu ý quan trọng:</h3>
+            <p class="explanation">
+                Đối với các ứng dụng SPA (Single Page Application), bạn có thể cần tạo một file <b>404.html</b> trong thư mục gốc của dự án. File này sẽ tự động được sao chép vào thư mục `build` và giúp giải quyết lỗi "trang không tìm thấy" khi làm mới trang con (subpage).
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * Hàm sao chép nội dung vào clipboard
+     * @param {HTMLElement} element - Phần tử chứa câu lệnh
+     */
+    function copyToClipboard(element) {
+        const textToCopy = element.querySelector('pre').innerText;
+        
+        const tempTextarea = document.createElement('textarea');
+        tempTextarea.value = textToCopy;
+        document.body.appendChild(tempTextarea);
+        tempTextarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextarea);
+
+        const copyButton = element.querySelector('.copy-button');
+        copyButton.textContent = 'Đã sao chép!';
+        setTimeout(() => {
+            copyButton.textContent = 'Sao chép';
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>
