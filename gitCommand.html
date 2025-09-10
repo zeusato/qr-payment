@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Git Webtool – Kịch bản thao tác Git (PowerShell chuẩn VS Code)</title>
+  <style>
+    :root { --bg:#0b0f14; --muted:#a8b3cf; --text:#e6e9ef; --brand:#7dd3fc; --accent:#c084fc; --border:#1f2a44; --panel:#0f1520; --code:#0a101a; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;background:
+      radial-gradient(1200px 600px at 20% -10%,#111827 0%,transparent 60%),
+      radial-gradient(1200px 600px at 120% 10%,#0b1324 0%,transparent 60%),#0b0f14;color:var(--text)}
+    header{position:sticky;top:0;background:#0b0f1480;backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:10}
+    header .bar{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .logo{font-weight:800}.logo .brand{color:var(--brand)}.logo .accent{color:var(--accent)}
+    .container{max-width:1200px;margin:24px auto 80px;padding:0 16px}
+
+    .card{background:linear-gradient(180deg,#0f1520,#0c121b);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+    .grid{display:grid;gap:12px}.grid.cols-2{grid-template-columns:1fr 1fr}.grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+    @media (max-width:920px){.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+    label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+    input,select,textarea{width:100%;background:var(--code);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#2a3a66;box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:14px 0}
+    .btn{background:#121a2a;color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn:hover{border-color:#2e3c68;transform:translateY(-1px)}
+    .btn.ok{background:#0f2a1a;border-color:#124b2d}
+    .btn.ghost{background:transparent}
+    .btn.disabled{opacity:.5;pointer-events:none}
+    .hint{font-size:12px;color:#9eb7ff}
+    .warn{color:#ffd27a}
+
+    .section-title{font-weight:800;font-size:18px;margin:0 0 10px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px dashed var(--border);color:var(--muted)}
+
+    .code{background:var(--code);border:1px solid #18223a;border-radius:12px;padding:12px;font-family:ui-monospace,Menlo,Consolas,Monaco;white-space:pre-wrap;word-break:break-word;font-size:13px}
+    .cmd-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch}
+    .cmd-actions{display:flex;gap:8px;align-items:center}
+
+    .divider{height:1px;background:var(--border);margin:16px 0;border-radius:999px}
+    .footer{margin-top:28px;color:var(--muted);font-size:12px;text-align:center}
+    .toast{position:fixed;bottom:18px;right:18px;background:#0a1322;border:1px solid #203054;color:var(--text);padding:10px 12px;border-radius:10px;opacity:0;transform:translateY(10px);transition:all .2s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    .error{border:1px solid #5a2a2a;background:#241214;color:#ffb3b3;padding:10px 12px;border-radius:10px;font-size:13px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">⚡ <span class="brand">Git</span> Webtool <span class="accent">(PowerShell)</span></div>
+    <div class="pill">Chuẩn hoá cho VS Code Terminal (PowerShell) • Trình duyệt KHÔNG thể chạy lệnh trực tiếp</div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Config -->
+  <div class="card" id="config">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div class="section-title">Thông số mặc định</div>
+        <div class="hint">Điền theo từng dự án. Không cố định. Dùng cho tất cả kịch bản.</div>
+      </div>
+      <div class="row">
+        <button class="btn" id="presetInfoHub">Preset: InfoHub</button>
+        <button class="btn" id="presetZUtil">Preset: Z-Utilities</button>
+      </div>
+    </div>
+    <div class="grid cols-3">
+      <div>
+        <label>Đường dẫn local (vd: D:\Quyetnm\Dev\InfoHub)</label>
+        <input id="localPath" value="" placeholder="D:\Quyetnm\Dev\YourProject" />
+      </div>
+      <div>
+        <label>Remote URL (vd: https://github.com/owner/repo.git)</label>
+        <input id="repoUrl" value="" placeholder="https://github.com/owner/repo.git" />
+      </div>
+      <div>
+        <label>Nhánh làm việc</label>
+        <input id="branch" value="main" placeholder="main | develop | feature/x" />
+      </div>
+    </div>
+    <div class="grid cols-3" style="margin-top:10px">
+      <div>
+        <label>Tên remote</label>
+        <input id="remote" value="origin" />
+      </div>
+      <div>
+        <label>Ghi chú WIP</label>
+        <input id="wipNote" value="WIP at office" />
+      </div>
+      <div>
+        <label>Chọn kịch bản</label>
+        <select id="scenario"></select>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="row">
+        <button class="btn ok" id="render" disabled>Tạo lệnh</button>
+        <button class="btn" id="copyAll" disabled>Copy tất cả</button>
+        <button class="btn" id="savePs1" disabled>Lưu PowerShell (.ps1)</button>
+      </div>
+      <div class="row">
+        <details class="help"><summary class="btn ghost">ℹ️ Hướng dẫn chạy trong VS Code</summary>
+          <div class="hint" style="margin-top:8px">
+            1) Mở VS Code → Terminal → New Terminal (chọn <b>PowerShell</b>)<br>
+            2) Nếu bị chặn script: chạy <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> và đồng ý<br>
+            3) Dán lệnh đã copy, hoặc chạy file <code>git-tool.ps1</code> đã lưu (<code>./git-tool.ps1</code>)
+          </div>
+        </details>
+      </div>
+    </div>
+    <div id="err" class="error" style="display:none"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Commands output -->
+  <div class="card" id="output">
+    <div class="section-title">Lệnh theo kịch bản (PowerShell)</div>
+    <div id="cmdList" class="grid" style="gap:10px"></div>
+  </div>
+
+  <div class="footer">Tip: <code>git config --global pull.rebase true</code> + <code>git config --global rebase.autoStash true</code> để kéo mượt khi đang dở tay.</div>
+</div>
+
+<div class="toast" id="toast">Đã copy ✅</div>
+
+<script>
+  // ==== Scenarios (PowerShell-first) ====
+  const SCENARIOS = [
+    {id:'pull-clean', name:'Kéo code mới (đã clone sẵn)', need:['path','remote','branch'],
+      build:({path,remote,branch})=>[
+        psCd(path), 'git remote -v', 'git fetch --all --prune', `git switch ${branch}`, `git pull --rebase ${remote} ${branch}`
+      ], note:'Cập nhật code khi repo đã tồn tại trong máy.'},
+    {id:'wip-stash', name:'Đang dở dang: stash rồi kéo', need:['path'],
+      build:({path,wipNote})=>[
+        psCd(path), 'git status', `git stash -u -m "${wipNote}"`, 'git pull --rebase', 'git stash pop'
+      ], note:'Cất tạm thay đổi để kéo tránh conflict.'},
+    {id:'wip-commit', name:'Đang dở dang: commit WIP rồi kéo', need:['path'],
+      build:({path,wipNote})=>[
+        psCd(path), 'git add -A', `git commit -m "${wipNote}"`, 'git pull --rebase'
+      ], note:'Commit tạm thời cho an toàn.'},
+    {id:'reset-hard', name:'Bỏ hết local, theo remote', need:['path','remote','branch'],
+      build:({path,remote,branch})=>[
+        psCd(path), 'git fetch --all --prune', `git reset --hard ${remote}/${branch}`, 'git clean -fd'
+      ], note:'⚠️ MẤT toàn bộ thay đổi chưa commit.'},
+    {id:'clone-init', name:'Chưa clone / thiếu remote', need:['path','url','remote','branch'],
+      build:({path,url,remote,branch})=>[
+        psCd(parentDir(path)), `git clone ${url}`, psCd(path), '# Nếu folder đã tồn tại nhưng chưa là repo:', 'git init', `git remote add ${remote} ${url}`, 'git fetch', `git switch -c ${branch} --track ${remote}/${branch}`
+      ], note:'Tạo repo local & tracking branch.'},
+    {id:'push-rejected', name:'Push bị từ chối (fetch first)', need:['path','remote','branch'],
+      build:({path,remote,branch})=>[
+        psCd(path), `git pull --rebase ${remote} ${branch}`, '# Fix conflict nếu có rồi:', 'git add -A', 'git rebase --continue', `git push ${remote} ${branch}`
+      ], note:'Kéo về, resolve, push lại.'},
+    {id:'main-master', name:'Remote không có main (dùng master)', need:['path','remote'],
+      build:({path,remote})=>[
+        psCd(path), `git ls-remote --heads ${remote}`, '# Nếu thấy master thì:', `git switch master || git switch -c master --track ${remote}/master`
+      ], note:'Xác nhận tên nhánh thật trên remote.'},
+    {id:'gh-pages', name:'Làm việc với nhánh gh-pages', need:['path','remote'],
+      build:({path,remote})=>[
+        psCd(path), `git fetch ${remote} gh-pages:gh-pages`, 'git switch gh-pages', `git pull --rebase ${remote} gh-pages`, 'git switch -'
+      ], note:'Khi dự án có nhánh deploy gh-pages.'},
+    {id:'vite-ghpages-setup', name:'Setup deploy Vite → gh-pages', need:['path'],
+      build:({path})=>[
+        psCd(path), '# package.json – scripts',
+        'npm pkg set scripts.predeploy="npm run build && node -e \"const fs=require(\\"fs\\"); fs.writeFileSync(\\"dist/.nojekyll\\",\\"\\"); fs.copyFileSync(\\"dist/index.html\\",\\"dist/404.html\\");\""',
+        'npm pkg set scripts.deploy="gh-pages -d dist"',
+        '# vite.config.ts – set base đúng tên repo: export default defineConfig({ base: \'/REPO_NAME/\' })',
+        'npm run predeploy', 'npm run deploy'
+      ], note:'Thêm .nojekyll + 404.html để tránh 404 khi refresh route.'},
+    {id:'global-config', name:'Cấu hình Git global kéo mượt', need:[],
+      build:()=>[
+        "git config --global pull.rebase true",
+        "git config --global rebase.autoStash true",
+        "git config --global init.defaultBranch main"
+      ], note:'Thiết lập 1 lần cho mọi repo.'},
+    {id:'diagnose', name:'Chẩn đoán nhanh', need:['path'],
+      build:({path})=>[
+        psCd(path), 'git status -sb', 'git rev-parse --abbrev-ref HEAD', 'git log --oneline --graph --decorate --all -n 10', 'git remote -v'
+      ], note:'Xem ahead/behind, branch, remote, commit gần nhất.'},
+  ];
+
+  // ==== Helpers ====
+  const $ = (id)=>document.getElementById(id);
+  const toast = (msg='Đã copy ✅')=>{ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1400) };
+  const parentDir = (p)=>{ if(!p) return 'C:'; const idx=Math.max(p.lastIndexOf('\\'),p.lastIndexOf('/')); return idx>0? p.slice(0,idx): p };
+  const q = (s)=>s.replaceAll('"','`"');
+  const psCd = (p)=>`Set-Location -Path "${q(p)}"`;
+
+  function getCfg(){
+    return {
+      path: $('localPath').value.trim(),
+      url: $('repoUrl').value.trim(),
+      branch: $('branch').value.trim()||'main',
+      remote: $('remote').value.trim()||'origin',
+      wipNote: $('wipNote').value.trim()||'WIP',
+    }
+  }
+
+  function needFieldsOk(sc,cfg){
+    const missing = [];
+    sc.need?.forEach(k=>{ if(!cfg[k]) missing.push(k) });
+    return {ok: missing.length===0, missing}
+  }
+
+  function buildScriptPS1(lines){
+      const header = ["param()","$ErrorActionPreference = 'Stop'","# Auto-generated by Git Webtool (PowerShell)"];
+      const body = lines.join('\n');
+      const footer = ["Write-Host 'Done.'"];
+      return header.concat(body, footer).join('\n');
+  }
+
+  function renderScenario(){
+    const sc = SCENARIOS.find(x=>x.id === $('scenario').value); if(!sc) return;
+    const cfg = getCfg();
+    const check = needFieldsOk(sc,cfg);
+    const err = $('err');
+
+    // Toggle buttons
+    const actionable = check.ok; 
+    ['render','copyAll','savePs1'].forEach(id=>$(id).classList.toggle('disabled', !actionable));
+    ['render','copyAll','savePs1'].forEach(id=>$(id).disabled = !actionable);
+
+    if(!check.ok){
+      err.style.display='block';
+      const map={path:'Đường dẫn local', url:'Remote URL', branch:'Nhánh', remote:'Remote'};
+      err.innerHTML = 'Thiếu thông tin: <b>'+ check.missing.map(k=>map[k]||k).join(', ') + '</b>.';
+    } else { err.style.display='none' }
+
+    if(!actionable) { $('cmdList').innerHTML=''; return; }
+
+    const cmds = sc.build(cfg);
+    const list = $('cmdList'); list.innerHTML='';
+
+    // Top actions for current scenario
+    const actions = document.createElement('div'); actions.className='row'; actions.style.justifyContent='flex-end'; actions.style.margin='-4px 0 8px';
+    const copyAll = document.createElement('button'); copyAll.className='btn'; copyAll.textContent='Copy tất cả lệnh';
+    copyAll.onclick = () => { navigator.clipboard.writeText(cmds.join('\n')).then(()=>toast('Đã copy tất cả ✅')) };
+    actions.appendChild(copyAll); list.appendChild(actions);
+
+    cmds.forEach(cmd=>{
+      const row=document.createElement('div'); row.className='cmd-row';
+      const code=document.createElement('div'); code.className='code'; code.textContent=cmd;
+      const act=document.createElement('div'); act.className='cmd-actions';
+      const btn=document.createElement('button'); btn.className='btn'; btn.textContent='Copy'; btn.onclick=()=>navigator.clipboard.writeText(cmd).then(()=>toast());
+      act.appendChild(btn);
+      row.appendChild(code); row.appendChild(act); list.appendChild(row);
+    });
+
+    const note=document.createElement('div'); note.className='hint'; note.style.marginTop='6px'; note.textContent=sc.note||''; list.appendChild(note);
+  }
+
+  function download(name, content){
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type:'text/plain'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  }
+
+  function savePS1(){
+    const sc = SCENARIOS.find(x=>x.id === $('scenario').value); if(!sc) return; const cfg=getCfg();
+    const check=needFieldsOk(sc,cfg); if(!check.ok) return;
+    const cmds=sc.build(cfg);
+    const ps1=buildScriptPS1(cmds);
+    download('git-tool.ps1', ps1);
+  }
+
+  function handleInput(){
+    // re-validate and keep buttons state responsive
+    renderScenario();
+  }
+
+  function init(){
+    // Populate dropdown
+    const sel=$('scenario');
+    SCENARIOS.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; sel.appendChild(o)});
+    sel.value='pull-clean';
+
+    // Bind
+    $('scenario').addEventListener('change', renderScenario);
+    ['localPath','repoUrl','branch','remote','wipNote'].forEach(id=>$(id).addEventListener('input', handleInput));
+    $('render').addEventListener('click', renderScenario);
+    $('copyAll').addEventListener('click', ()=>{
+      const sc=SCENARIOS.find(x=>x.id===$('scenario').value); const cfg=getCfg(); const check=needFieldsOk(sc,cfg); if(!check.ok) return;
+      const cmds=sc.build(cfg); navigator.clipboard.writeText(cmds.join('\n')).then(()=>toast('Đã copy tất cả ✅'));
+    });
+    $('savePs1').addEventListener('click', savePS1);
+
+    // Presets (tuỳ chọn, không auto gán)
+    $('presetInfoHub').addEventListener('click', ()=>{ $('localPath').value='D:\\Quyetnm\\Dev\\InfoHub'; $('repoUrl').value='https://github.com/zeusato/InfoHub.git'; $('branch').value='main'; toast('Đã điền InfoHub'); renderScenario(); });
+    $('presetZUtil').addEventListener('click', ()=>{ $('localPath').value='D:\\Quyetnm\\Dev\\Z-Utilities'; $('repoUrl').value='https://github.com/zeusato/Z-Utilities.git'; $('branch').value='main'; toast('Đã điền Z-Utilities'); renderScenario(); });
+
+    // First render
+    renderScenario();
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
