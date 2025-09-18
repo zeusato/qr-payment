@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển Đổi SQL sang XLSX</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS library for XLSX generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .file-drop-area {
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .file-drop-area.dragover {
+            background-color: #e0f2fe;
+            border-color: #38bdf8;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 md:p-10">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Công Cụ Chuyển Đổi SQL sang XLSX</h1>
+            <p class="text-gray-600 mb-8">Tải lên tệp `.sql` của bạn để chuyển đổi thành tệp Excel. Mọi quá trình xử lý đều diễn ra ngay trên trình duyệt của bạn.</p>
+        </div>
+
+        <!-- File Upload Area -->
+        <div id="drop-area" class="file-drop-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-gray-50">
+            <input type="file" id="sql-file" accept=".sql" class="hidden">
+            <div class="flex flex-col items-center">
+                <svg class="w-12 h-12 text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+                <p class="text-gray-700 font-medium">Kéo và thả tệp `.sql` vào đây</p>
+                <p class="text-gray-500 text-sm mt-1">hoặc <span class="text-blue-600 font-semibold">chọn một tệp</span> từ máy tính của bạn</p>
+                <p id="file-name" class="text-sm text-green-600 mt-4 font-medium"></p>
+            </div>
+        </div>
+
+        <!-- Convert Button -->
+        <div class="mt-8 text-center">
+            <button id="convert-btn" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                Chuyển đổi và Tải về
+            </button>
+        </div>
+
+        <!-- Status/Error Message Area -->
+        <div id="status" class="mt-6 text-center text-sm"></div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('sql-file');
+        const fileNameDisplay = document.getElementById('file-name');
+        const convertBtn = document.getElementById('convert-btn');
+        const statusDiv = document.getElementById('status');
+        let selectedFile = null;
+
+        // --- Drag and Drop Event Handlers ---
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+        });
+
+        dropArea.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFileSelect, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.name.endsWith('.sql')) {
+                    selectedFile = file;
+                    fileNameDisplay.textContent = `Tệp đã chọn: ${file.name}`;
+                    convertBtn.disabled = false;
+                    statusDiv.textContent = '';
+                } else {
+                    displayMessage('Vui lòng chỉ chọn tệp có định dạng .sql', 'error');
+                    resetState();
+                }
+            }
+        }
+
+        // --- Main Conversion Logic ---
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                displayMessage('Vui lòng chọn một tệp SQL trước.', 'error');
+                return;
+            }
+
+            displayMessage('Đang xử lý... việc này có thể mất một lúc đối với các tệp lớn.', 'loading');
+            convertBtn.disabled = true;
+
+            try {
+                const sqlContent = await selectedFile.text();
+                // We use a timeout to allow the UI to update with the "Processing..." message
+                setTimeout(() => {
+                   try {
+                        processSql(sqlContent);
+                   } catch (e) {
+                       console.error(e);
+                       displayMessage(`Đã xảy ra lỗi khi xử lý tệp: ${e.message}`, 'error');
+                       resetState(false);
+                   }
+                }, 50);
+
+            } catch (error) {
+                displayMessage(`Lỗi khi đọc tệp: ${error.message}`, 'error');
+                resetState();
+            }
+        });
+        
+        function processSql(sql) {
+            // UPDATED Regex: More flexible to capture various table name formats like "schema"."table".
+            // It captures: 1=tableName, 2=columnList, 3=values
+            const insertRegex = /(?:INSERT|REPLACE)(?:\s+IGNORE)?\s+INTO\s+(.+?)\s*(?:\(([^)]+)\))?\s*VALUES\s*([\s\S]+?);/gi;
+            let match;
+            const tables = {};
+            let skippedCount = 0;
+
+            while ((match = insertRegex.exec(sql)) !== null) {
+                // Trim and clean up the captured table name
+                const tableName = match[1].trim().replace(/[`"']/g, '');
+                const columnsString = match[2];
+                const valuesString = match[3];
+
+                // This tool requires explicit column names in the INSERT statement to build the header row.
+                if (!columnsString) {
+                    skippedCount++;
+                    console.warn(`Skipping an INSERT statement for table "${tableName}" because it doesn't specify column names.`);
+                    continue; // Move to the next match
+                }
+                
+                if (!tables[tableName]) {
+                    const headers = columnsString.split(',').map(h => h.trim().replace(/[`"']/g, ''));
+                    tables[tableName] = { headers: headers, rows: [] };
+                }
+                
+                const headers = tables[tableName].headers;
+
+                // Regex to split rows of values. It handles values like `('a', 'b'), ('c', 'd')`.
+                const rowRegex = /\((.*?)\)/g;
+                let rowMatch;
+                while ((rowMatch = rowRegex.exec(valuesString)) !== null) {
+                    // This is a simplified value parser. It might fail on complex strings with commas inside.
+                    const values = rowMatch[1].split(',').map(val => {
+                        let cleanedVal = val.trim();
+                        // Remove surrounding quotes if they exist
+                        if ((cleanedVal.startsWith("'") && cleanedVal.endsWith("'")) || (cleanedVal.startsWith('"') && cleanedVal.endsWith('"'))) {
+                            cleanedVal = cleanedVal.substring(1, cleanedVal.length - 1)
+                                .replace(/\\'/g, "'") // Unescape single quotes
+                                .replace(/\\"/g, '"'); // Unescape double quotes
+                        }
+                        // Handle NULL keyword
+                        if (cleanedVal.toUpperCase() === 'NULL') {
+                            return null;
+                        }
+                        return cleanedVal;
+                    });
+                    if(values.length === headers.length){
+                        tables[tableName].rows.push(values);
+                    }
+                }
+            }
+
+            if (Object.keys(tables).length === 0) {
+                let errorMessage = 'Không tìm thấy câu lệnh "INSERT" hợp lệ nào có chứa danh sách cột trong tệp.';
+                if (skippedCount > 0) {
+                    errorMessage += ` Đã bỏ qua ${skippedCount} câu lệnh vì chúng không chỉ định tên cột.`;
+                }
+                displayMessage(errorMessage, 'error');
+                resetState(false);
+                return;
+            }
+
+            generateXlsx(tables);
+        }
+
+        function generateXlsx(tables) {
+            const wb = XLSX.utils.book_new();
+            for (const tableName in tables) {
+                const data = [tables[tableName].headers, ...tables[tableName].rows];
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws, tableName);
+            }
+
+            // Generate file and trigger download
+            const outputFileName = selectedFile.name.replace(/\.sql$/i, '.xlsx');
+            XLSX.writeFile(wb, outputFileName);
+
+            displayMessage(`Chuyển đổi thành công! Tệp "${outputFileName}" đã được tải về.`, 'success');
+            resetState();
+        }
+
+
+        // --- UI Helper Functions ---
+        function displayMessage(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.classList.remove('text-red-600', 'text-gray-600', 'text-green-600');
+            if (type === 'error') {
+                statusDiv.classList.add('text-red-600');
+            } else if (type === 'success') {
+                statusDiv.classList.add('text-green-600');
+            } else { // loading
+                statusDiv.classList.add('text-gray-600');
+            }
+        }
+
+        function resetState(fullReset = true) {
+            if(fullReset) {
+                selectedFile = null;
+                fileInput.value = '';
+                fileNameDisplay.textContent = '';
+            }
+            convertBtn.disabled = selectedFile === null;
+        }
+
+    </script>
+</body>
+</html>
+
