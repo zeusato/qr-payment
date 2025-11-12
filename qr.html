@@ -33,10 +33,11 @@
       document.getElementById('qrArea').innerHTML = '<p style="color:red">Thiếu tham số: stk, bank hoặc amount</p>';
     } else {
       const qrUrl = `https://img.vietqr.io/image/${bank}-${stk}-compact2.png?amount=${amount}`;
-      document.getElementById('qrArea').innerHTML = `<img src="${qrUrl}" alt="QR chuyển khoản"><p style='color: grey; font-size: 14px;'>STK: ${stk} | Bank: ${bank} | Số tiền: ${amount} VND</p>`;
+      document.getElementById('qrArea').innerHTML = `<img src="${qrUrl}" alt="QR chuyển khoản">`;
     }
   </script>
 </body>
 </html>
+
 
 
